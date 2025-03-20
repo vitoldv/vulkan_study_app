@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <set>
 #include "VulkanUtils.h"
 
 #ifdef NDEBUG
@@ -15,6 +16,11 @@
 #endif
 
 using namespace std;
+
+// Names of extensions required to run the application
+const vector<const char*> deviceExtensions = {
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
 
 const vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -31,6 +37,8 @@ private:
 	VkPhysicalDevice vkPhysicalDevice;
 	VkDevice vkLogicalDevice;
 	VkQueue vkGraphicsQueue;
+	VkQueue vkPresentationQueue;
+	VkSurfaceKHR vkSurface;
 
 	// Extension Vulkan Components
 #ifndef NDEBUG
@@ -50,12 +58,16 @@ private:
 	void createVulkanInstance();
 	void retrievePhysicalDevice();
 	void createLogicalDevice();
+	void createSurface();
+
 	void setupDebugMessenger();
 
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);
-	bool isDeviceSupported(VkPhysicalDevice device);
+	bool isDeviceSupportsRequiredExtensions(VkPhysicalDevice device);
+	bool isDeviceSuitable(VkPhysicalDevice device);
 
 	QueueFamilyIndices getQueueFamilies(VkPhysicalDevice device);
+	SwapChainDetails getSwapChainDetails(VkPhysicalDevice device);
 	bool checkValidationLayerSupport();
 
 	void printPhysicalDeviceInfo(VkPhysicalDevice device, bool printPropertiesFull = false, bool printFeaturesFull = false);
