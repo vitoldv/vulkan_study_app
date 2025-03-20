@@ -8,7 +8,18 @@
 #include <string>
 #include "VulkanUtils.h"
 
+#ifdef NDEBUG
+#define ENABLE_VALIDATION_LAYERS false
+#else
+#define ENABLE_VALIDATION_LAYERS true
+#endif
+
 using namespace std;
+
+const vector<const char*> validationLayers = {
+	"VK_LAYER_KHRONOS_validation"
+};
+
 
 class VulkanRenderer
 {
@@ -20,6 +31,11 @@ private:
 	VkPhysicalDevice vkPhysicalDevice;
 	VkDevice vkLogicalDevice;
 	VkQueue vkGraphicsQueue;
+
+	// Extension Vulkan Components
+#ifndef NDEBUG
+	VkDebugUtilsMessengerEXT debugMessenger;
+#endif
 
 public:
 	VulkanRenderer();
@@ -34,11 +50,13 @@ private:
 	void createVulkanInstance();
 	void retrievePhysicalDevice();
 	void createLogicalDevice();
+	void setupDebugMessenger();
 
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);
 	bool isDeviceSupported(VkPhysicalDevice device);
 
 	QueueFamilyIndices getQueueFamilies(VkPhysicalDevice device);
+	bool checkValidationLayerSupport();
 
 	void printPhysicalDeviceInfo(VkPhysicalDevice device, bool printPropertiesFull = false, bool printFeaturesFull = false);
 };
