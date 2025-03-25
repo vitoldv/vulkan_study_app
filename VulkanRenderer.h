@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <algorithm>
+
 #include "VulkanUtils.h"
 
 #ifdef NDEBUG
@@ -14,6 +16,11 @@
 #else
 #define ENABLE_VALIDATION_LAYERS true
 #endif
+
+// preferrable surface settings (selected if supported)
+#define SURFACE_COLOR_FORMAT		VK_FORMAT_R8G8B8A8_UNORM
+#define SURFACE_COLOR_SPACE			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+#define SURFACE_PRESENTATION_MODE	VK_PRESENT_MODE_MAILBOX_KHR
 
 using namespace std;
 
@@ -39,11 +46,18 @@ private:
 	VkQueue vkGraphicsQueue;
 	VkQueue vkPresentationQueue;
 	VkSurfaceKHR vkSurface;
+	VkSwapchainKHR vkSwapchain;
+	vector<SwapChainImage> swapchainImages;
 
 	// Extension Vulkan Components
 #ifndef NDEBUG
 	VkDebugUtilsMessengerEXT debugMessenger;
 #endif
+
+	// Utility
+	VkFormat swapChainImageFormat;
+	VkExtent2D swapChainExtent;
+
 
 public:
 	VulkanRenderer();
@@ -59,8 +73,14 @@ private:
 	void retrievePhysicalDevice();
 	void createLogicalDevice();
 	void createSurface();
+	void createSwapChain();
 
 	void setupDebugMessenger();
+
+	VkSurfaceFormatKHR defineSurfaceFormat(const vector<VkSurfaceFormatKHR>& formats);
+	VkPresentModeKHR definePresentationMode(const vector<VkPresentModeKHR> presentationModes);
+	VkExtent2D defineSwapChainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
+	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);
 	bool isDeviceSupportsRequiredExtensions(VkPhysicalDevice device);

@@ -34,6 +34,12 @@ struct SwapChainDetails
 	}
 };
 
+struct SwapChainImage
+{
+	VkImage image;
+	VkImageView imageView;
+};
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	VkDebugUtilsMessageTypeFlagsEXT messageType,
