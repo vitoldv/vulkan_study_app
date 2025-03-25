@@ -74,6 +74,7 @@ private:
 	void createLogicalDevice();
 	void createSurface();
 	void createSwapChain();
+	void createGraphicsPipeline();
 
 	void setupDebugMessenger();
 
@@ -81,6 +82,7 @@ private:
 	VkPresentModeKHR definePresentationMode(const vector<VkPresentModeKHR> presentationModes);
 	VkExtent2D defineSwapChainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+	VkShaderModule createShaderModule(const vector<char>& code);
 
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);
 	bool isDeviceSupportsRequiredExtensions(VkPhysicalDevice device);

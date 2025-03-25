@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <fstream>
 using namespace std;
 
 #define VALIDATION_LAYER_OUTPUT_STR "--- VALIDATION LAYER MSG: "
@@ -39,6 +40,27 @@ struct SwapChainImage
 	VkImage image;
 	VkImageView imageView;
 };
+
+static vector<char> readFile(const string &filename)
+{
+	ifstream file(filename, ios::binary | ios::ate);
+	if (!file.is_open())
+	{
+		throw runtime_error("Failed to open file.");
+	}
+
+	size_t fileSize = (size_t)file.tellg();
+	vector<char> fileBuffer(fileSize);
+
+	file.seekg(0);
+
+	file.read(fileBuffer.data(), fileSize);
+
+	file.close();
+
+	return fileBuffer;
+}
+
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

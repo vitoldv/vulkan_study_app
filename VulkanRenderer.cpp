@@ -16,6 +16,7 @@ int VulkanRenderer::init(GLFWwindow* window)
 		printPhysicalDeviceInfo(this->vkPhysicalDevice);
 		createLogicalDevice();
 		createSwapChain();
+		createGraphicsPipeline();
 	}
 	catch (const runtime_error &e)
 	{
@@ -282,9 +283,36 @@ void VulkanRenderer::createSwapChain()
 	}
 }
 
-// Best format is subjective, but ours will be:
-// format		:	VK_FORMAT_R8G8B8A8_UNORM (VK_FORMAT_B8G8R8A8_UNORM as backup)
-// colorSpace	:	VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+void VulkanRenderer::createGraphicsPipeline()
+{
+	// read SPIR-V shader code
+	auto vertexShaderCode = readFile("shaders/vert.spv");
+	auto fragmentShaderCode = readFile("shaders/frag.spv");
+
+	// build shader modules to link to graphics pipeline
+	VkShaderModule vertexShaderModule = createShaderModule(vertexShaderCode);
+	VkShaderModule fragmentShaderModule = createShaderModule(fragmentShaderCode);
+
+	// VERTEX STAGE CREATION
+	VkPipelineShaderStageCreateInfo vertexShaderStageCreateInfo = {};
+	vertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	vertexShaderStageCreateInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;			// shader stage name
+	vertexShaderStageCreateInfo.module = vertexShaderModule;				// shader module to be used
+	vertexShaderStageCreateInfo.pName = "main";								// shader enter function
+
+	// FRAGMENT STAGE CREATION
+	VkPipelineShaderStageCreateInfo fragmentShaderStageCreateInfo = {};
+	vertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	vertexShaderStageCreateInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;		// shader stage name
+	vertexShaderStageCreateInfo.module = fragmentShaderModule;				// shader module to be used
+	vertexShaderStageCreateInfo.pName = "main";								// shader enter function
+
+	VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageCreateInfo, fragmentShaderStageCreateInfo };
+
+	vkDestroyShaderModule(this->vkLogicalDevice, fragmentShaderModule, nullptr);
+	vkDestroyShaderModule(this->vkLogicalDevice, vertexShaderModule, nullptr);
+}
+
 VkSurfaceFormatKHR VulkanRenderer::defineSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats)
 {
 	// If only 1 format available and is undefined, then this means ALL formats are available (no restrictions)
@@ -601,4 +629,21 @@ void VulkanRenderer::printPhysicalDeviceInfo(VkPhysicalDevice device, bool print
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 	
 	// TODO Print device features info
+}
+
+VkShaderModule VulkanRenderer::createShaderModule(const vector<char>& code)
+{
+	VkShaderModuleCreateInfo shaderModuleCreateInfo = {};
+	shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	shaderModuleCreateInfo.codeSize = code.size();
+	shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+	VkShaderModule shaderModule;
+	VkResult result = vkCreateShaderModule(this->vkLogicalDevice, &shaderModuleCreateInfo, nullptr, &shaderModule);
+	if (result != VK_SUCCESS)
+	{
+		throw runtime_error("Failed to create shader module.");
+	}
+
+	return shaderModule;
 }
