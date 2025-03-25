@@ -8,6 +8,7 @@
 #include <string>
 #include <set>
 #include <algorithm>
+#include <array>
 
 #include "VulkanUtils.h"
 
@@ -49,6 +50,12 @@ private:
 	VkSwapchainKHR vkSwapchain;
 	vector<SwapChainImage> swapchainImages;
 
+	// Graphics pipeline
+	VkRenderPass vkRenderPass;
+	VkPipeline vkGraphicsPipeline;
+	VkPipelineLayout vkPipelineLayout;
+
+
 	// Extension Vulkan Components
 #ifndef NDEBUG
 	VkDebugUtilsMessengerEXT debugMessenger;
@@ -74,6 +81,7 @@ private:
 	void createLogicalDevice();
 	void createSurface();
 	void createSwapChain();
+	void createRenderPass();
 	void createGraphicsPipeline();
 
 	void setupDebugMessenger();
