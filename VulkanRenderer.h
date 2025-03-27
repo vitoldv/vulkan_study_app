@@ -54,7 +54,9 @@ private:
 	VkRenderPass vkRenderPass;
 	VkPipeline vkGraphicsPipeline;
 	VkPipelineLayout vkPipelineLayout;
-
+	vector<VkFramebuffer> vkSwapchainFramebuffers;
+	VkCommandPool vkGraphicsCommandPool;
+	vector<VkCommandBuffer> vkCommandBuffers;
 
 	// Extension Vulkan Components
 #ifndef NDEBUG
@@ -83,6 +85,9 @@ private:
 	void createSwapChain();
 	void createRenderPass();
 	void createGraphicsPipeline();
+	void createFramebuffers();
+	void createCommandPool();
+	void createCommandBuffers();
 
 	void setupDebugMessenger();
 
@@ -91,6 +96,7 @@ private:
 	VkExtent2D defineSwapChainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	VkShaderModule createShaderModule(const vector<char>& code);
+	void recordCommands();
 
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);
 	bool isDeviceSupportsRequiredExtensions(VkPhysicalDevice device);
