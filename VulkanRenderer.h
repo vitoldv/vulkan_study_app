@@ -23,6 +23,8 @@
 #define SURFACE_COLOR_SPACE			VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 #define SURFACE_PRESENTATION_MODE	VK_PRESENT_MODE_MAILBOX_KHR
 
+#define MAX_FRAME_DRAWS 2
+
 using namespace std;
 
 // Names of extensions required to run the application
@@ -39,6 +41,8 @@ class VulkanRenderer
 {
 private:
 	GLFWwindow* window;
+
+	int currentFrame = 0;
 
 	// Native Vulkan Components
 	VkInstance vkInstance; 
@@ -66,12 +70,15 @@ private:
 	// Utility
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
-
+	vector<VkSemaphore> vkSemImageAvailable;
+	vector<VkSemaphore> vkSemRenderFinished;
+	vector<VkFence> vkDrawFences;
 
 public:
 	VulkanRenderer();
 
 	int init(GLFWwindow* window);
+	void draw();
 	void cleanup();
 
 	~VulkanRenderer();
@@ -88,6 +95,7 @@ private:
 	void createFramebuffers();
 	void createCommandPool();
 	void createCommandBuffers();
+	void createSyncTools();
 
 	void setupDebugMessenger();
 
