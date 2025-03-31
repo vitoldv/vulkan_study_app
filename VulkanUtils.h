@@ -141,7 +141,7 @@ static void copyBuffer(VkDevice logicalDevice, VkQueue transferQueue, VkCommandP
 
 	// Info to begin command buffer record
 	VkCommandBufferBeginInfo beginInfo = {};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;		// We're only using the command buffer once
 
 	// Record transfer commands
@@ -176,17 +176,17 @@ static void copyBuffer(VkDevice logicalDevice, VkQueue transferQueue, VkCommandP
 static void createBuffer(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags,
 	VkMemoryPropertyFlags bufferProperties, VkBuffer* buffer, VkDeviceMemory* bufferMemory)
 {
-	// CREATE VERTEX BUFFER
+	// CREATE BUFFER
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferCreateInfo.size = bufferSize;
-	bufferCreateInfo.usage = bufferUsageFlags;											// Multiple types of buffer possible, we want Vertex Buffer
-	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;											// Similar to Swap Chain images, can share vertex buffers 
+	bufferCreateInfo.usage = bufferUsageFlags;										
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	VkResult result = vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, buffer);
 	if (result != VK_SUCCESS)
 	{
-		throw runtime_error("Failed to create a vertex buffer.");
+		throw runtime_error("Failed to create a buffer.");
 	}
 
 	// GET BUFFER MEMORY REQUIREMENTS
@@ -203,10 +203,10 @@ static void createBuffer(VkPhysicalDevice physicalDevice, VkDevice logicalDevice
 	result = vkAllocateMemory(logicalDevice, &memAllocInfo, nullptr, bufferMemory);
 	if (result != VK_SUCCESS)
 	{
-		throw runtime_error("Failed to allocate Vertex Buffer Memory.");
+		throw runtime_error("Failed to allocate Buffer Memory.");
 	}
 
-	// Allocate memory to given vertex buffer
+	// Allocate memory to given buffer
 	vkBindBufferMemory(logicalDevice, *buffer, *bufferMemory, 0);
 
 }

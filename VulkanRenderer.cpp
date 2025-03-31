@@ -22,12 +22,16 @@ int VulkanRenderer::init(GLFWwindow* window)
 		createCommandPool();
 
 		vector<Vertex> meshVertices = {
-	{	{1, -1, 0.0},	{1, 0.0f, 0.0f}	},
-	{	{1,  1, 0.0},	{0.0f, 1, 0.0f}	},
-	{	{-1, 1, 0.0},	{0.0f, 0.0f, 1}	},
+		{	{1, -1, 0.0},	{1, 0.0f, 0.0f}	},
+		{	{1,  1, 0.0},	{0.0f, 1, 0.0f}	},
+		{	{-1, 1, 0.0},	{0.0f, 0.0f, 1}	},
 		};
+		vector<uint32_t> meshIndices = {
+			0, 1, 2
+		};
+
 		this->testMesh = Mesh(this->vkPhysicalDevice, this->vkLogicalDevice,
-			vkGraphicsQueue, vkGraphicsCommandPool, &meshVertices);
+			vkGraphicsQueue, vkGraphicsCommandPool, &meshVertices, &meshIndices);
 
 		createCommandBuffers();
 		recordCommands();
@@ -49,7 +53,7 @@ void VulkanRenderer::cleanup()
 	// Wait until there is nothing on a queue 
 	vkDeviceWaitIdle(this->vkLogicalDevice);
 
-	testMesh.destroyVertexBuffer();
+	testMesh.destroyDataBuffers();
 
 	for (int i = 0; i < MAX_FRAME_DRAWS; i++)
 	{
@@ -711,12 +715,14 @@ void VulkanRenderer::recordCommands()
 		vkCmdBindPipeline(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkGraphicsPipeline);
 
 		VkBuffer vertexBuffers[] = { testMesh.getVertexBuffer() };							// buffers to bind
+		VkBuffer indexBuffer = testMesh.getIndexBuffer();
 		VkDeviceSize offsets[] = { 0 };														// offsets into buffers being bound
 		vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);	// Command to bind vertex buffer before deawing with them
-
+		//vkCmdBindIndexBuffer(this->vkCommandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		// execute pipeline
 		vkCmdDraw(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getVertexCount()), 1, 0, 0);
+		//vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getIndexCount()), 1, 0, 0, 0);
 
 		// End render pass
 		vkCmdEndRenderPass(this->vkCommandBuffers[i]);
