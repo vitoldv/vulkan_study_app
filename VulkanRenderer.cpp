@@ -15,19 +15,20 @@ int VulkanRenderer::init(GLFWwindow* window)
 		retrievePhysicalDevice();
 		printPhysicalDeviceInfo(this->vkPhysicalDevice);
 		createLogicalDevice();
-
-		vector<Vertex> meshVertices = {
-			{	{1, -1, 0.0},	{1, 0.0f, 0.0f}	},
-			{	{1,  1, 0.0},	{0.0f, 1, 0.0f}	},
-			{	{-1, 1, 0.0},	{0.0f, 0.0f, 1}	},
-		};
-		this->testMesh = Mesh(this->vkPhysicalDevice, this->vkLogicalDevice, &meshVertices);
-
 		createSwapChain();
 		createRenderPass();
 		createGraphicsPipeline();
 		createFramebuffers();
 		createCommandPool();
+
+		vector<Vertex> meshVertices = {
+	{	{1, -1, 0.0},	{1, 0.0f, 0.0f}	},
+	{	{1,  1, 0.0},	{0.0f, 1, 0.0f}	},
+	{	{-1, 1, 0.0},	{0.0f, 0.0f, 1}	},
+		};
+		this->testMesh = Mesh(this->vkPhysicalDevice, this->vkLogicalDevice,
+			vkGraphicsQueue, vkGraphicsCommandPool, &meshVertices);
+
 		createCommandBuffers();
 		recordCommands();
 		createSyncTools();

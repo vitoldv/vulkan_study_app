@@ -1,8 +1,11 @@
 #pragma once
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 #include <vector>
 #include <fstream>
 #include <iostream>
+
 using namespace std;
 
 #define VALIDATION_LAYER_OUTPUT_STR "--- VALIDATION LAYER MSG: "
@@ -102,4 +105,108 @@ static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT&
 	createInfo.messageSeverity = VALIDATION_LAYER_ALLOWED_MESSAGE_SEVERITY;
 	createInfo.messageType = VALIDATION_LAYER_ALLOWED_MESSAGE_TYPE;
 	createInfo.pfnUserCallback = debugCallback;
+}
+
+static uint32_t findMemoryTypeIndex(VkPhysicalDevice physicalDevice, uint32_t allowedTypes, VkMemoryPropertyFlags properties)
+{
+	// Get preperties of physical device memory
+	VkPhysicalDeviceMemoryProperties memProperties;
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+	{
+		if ((allowedTypes & (1 << i))														// Index of memory type must match correspoding bit in allowedTypes
+			&& (memProperties.memoryTypes[i].propertyFlags & properties) == properties)		// Desired property bit flags are part of memory type's property flags 	
+		{
+			// This memory type is valid, so return its index
+			return i;
+		}
+	}
+}
+
+static void copyBuffer(VkDevice logicalDevice, VkQueue transferQueue, VkCommandPool transferCommandPool,
+	VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize bufferSize)
+{
+	// Command buffer to hold transfer commands
+	VkCommandBuffer transferCommandBuffer;
+	
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = transferCommandPool;
+	allocInfo.commandBufferCount = 1;
+
+	// Allocate command buffer from pool
+	vkAllocateCommandBuffers(logicalDevice, &allocInfo, &transferCommandBuffer);
+
+	// Info to begin command buffer record
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;		// We're only using the command buffer once
+
+	// Record transfer commands
+	vkBeginCommandBuffer(transferCommandBuffer, &beginInfo);
+	
+	// Region of data to copy from or to
+	VkBufferCopy bufferCopyRegion = {};
+	bufferCopyRegion.srcOffset = 0;
+	bufferCopyRegion.dstOffset = 0; 
+	bufferCopyRegion.size = bufferSize;
+
+	// Command to copy src buffer to dst buffer
+	vkCmdCopyBuffer(transferCommandBuffer, srcBuffer, dstBuffer, 1, &bufferCopyRegion);
+
+	// End commands
+	vkEndCommandBuffer(transferCommandBuffer);
+
+	// submit to queue
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &transferCommandBuffer;
+
+	// Submit transfer command to transfer queue and wait until it finishes
+	vkQueueSubmit(transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(transferQueue);
+
+	// Free temporary command buffer
+	vkFreeCommandBuffers(logicalDevice, transferCommandPool, 1, &transferCommandBuffer);
+}
+
+static void createBuffer(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VkDeviceSize bufferSize, VkBufferUsageFlags bufferUsageFlags,
+	VkMemoryPropertyFlags bufferProperties, VkBuffer* buffer, VkDeviceMemory* bufferMemory)
+{
+	// CREATE VERTEX BUFFER
+	VkBufferCreateInfo bufferCreateInfo = {};
+	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferCreateInfo.size = bufferSize;
+	bufferCreateInfo.usage = bufferUsageFlags;											// Multiple types of buffer possible, we want Vertex Buffer
+	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;											// Similar to Swap Chain images, can share vertex buffers 
+
+	VkResult result = vkCreateBuffer(logicalDevice, &bufferCreateInfo, nullptr, buffer);
+	if (result != VK_SUCCESS)
+	{
+		throw runtime_error("Failed to create a vertex buffer.");
+	}
+
+	// GET BUFFER MEMORY REQUIREMENTS
+	VkMemoryRequirements memReq;
+	vkGetBufferMemoryRequirements(logicalDevice, *buffer, &memReq);
+
+	// ALLOCATE MEMORY TO BUFFER
+	VkMemoryAllocateInfo memAllocInfo = {};
+	memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	memAllocInfo.allocationSize = memReq.size;
+	memAllocInfo.memoryTypeIndex = findMemoryTypeIndex(physicalDevice, memReq.memoryTypeBits, bufferProperties);
+
+	// Allocate memory to VKDeviceMemory
+	result = vkAllocateMemory(logicalDevice, &memAllocInfo, nullptr, bufferMemory);
+	if (result != VK_SUCCESS)
+	{
+		throw runtime_error("Failed to allocate Vertex Buffer Memory.");
+	}
+
+	// Allocate memory to given vertex buffer
+	vkBindBufferMemory(logicalDevice, *buffer, *bufferMemory, 0);
+
 }
