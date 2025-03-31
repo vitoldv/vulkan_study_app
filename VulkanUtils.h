@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <fstream>
+#include <iostream>
 using namespace std;
 
 #define VALIDATION_LAYER_OUTPUT_STR "--- VALIDATION LAYER MSG: "

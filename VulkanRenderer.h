@@ -9,6 +9,7 @@
 #include <set>
 #include <algorithm>
 #include <array>
+#include "Mesh.h"
 
 #include "VulkanUtils.h"
 
@@ -73,6 +74,8 @@ private:
 	vector<VkSemaphore> vkSemImageAvailable;
 	vector<VkSemaphore> vkSemRenderFinished;
 	vector<VkFence> vkDrawFences;
+
+	Mesh testMesh;
 
 public:
 	VulkanRenderer();

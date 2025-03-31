@@ -15,6 +15,14 @@ int VulkanRenderer::init(GLFWwindow* window)
 		retrievePhysicalDevice();
 		printPhysicalDeviceInfo(this->vkPhysicalDevice);
 		createLogicalDevice();
+
+		vector<Vertex> meshVertices = {
+			{	{1, -1, 0.0},	{1, 0.0f, 0.0f}	},
+			{	{1,  1, 0.0},	{0.0f, 1, 0.0f}	},
+			{	{-1, 1, 0.0},	{0.0f, 0.0f, 1}	},
+		};
+		this->testMesh = Mesh(this->vkPhysicalDevice, this->vkLogicalDevice, &meshVertices);
+
 		createSwapChain();
 		createRenderPass();
 		createGraphicsPipeline();
@@ -23,6 +31,8 @@ int VulkanRenderer::init(GLFWwindow* window)
 		createCommandBuffers();
 		recordCommands();
 		createSyncTools();
+
+
 	}
 	catch (const runtime_error &e)
 	{
@@ -37,6 +47,8 @@ void VulkanRenderer::cleanup()
 {
 	// Wait until there is nothing on a queue 
 	vkDeviceWaitIdle(this->vkLogicalDevice);
+
+	testMesh.destroyVertexBuffer();
 
 	for (int i = 0; i < MAX_FRAME_DRAWS; i++)
 	{
@@ -403,13 +415,30 @@ void VulkanRenderer::createGraphicsPipeline()
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageCreateInfo, fragmentShaderStageCreateInfo };
 
+	// Describing vertex data layout
+	VkVertexInputBindingDescription bindingDescription = {};
+	bindingDescription.binding = 0;
+	bindingDescription.stride = sizeof(Vertex);
+	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	array<VkVertexInputAttributeDescription, 2> attributes;
+	attributes[0].binding = 0;										// should be same as above
+	attributes[0].location = 0;
+	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[0].offset = offsetof(Vertex, pos);
+
+	attributes[1].binding = 0;										// should be same as above
+	attributes[1].location = 1;
+	attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[1].offset = offsetof(Vertex, color);
+
 	// VERTEX INPUT
 	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
 	vertexInputCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputCreateInfo.vertexBindingDescriptionCount = 0;
-	vertexInputCreateInfo.pVertexBindingDescriptions = nullptr;					// list of vertex binding descriptions (data spacing/stride information)
-	vertexInputCreateInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputCreateInfo.pVertexAttributeDescriptions = nullptr;				// list of vertex attribute descriptions (data format and where to bind to/from)
+	vertexInputCreateInfo.vertexBindingDescriptionCount = 1;
+	vertexInputCreateInfo.pVertexBindingDescriptions = &bindingDescription;					// list of vertex binding descriptions (data spacing/stride information)
+	vertexInputCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
+	vertexInputCreateInfo.pVertexAttributeDescriptions = attributes.data();				// list of vertex attribute descriptions (data format and where to bind to/from)
 
 	// INPUT ASSEMBLY
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
@@ -679,8 +708,14 @@ void VulkanRenderer::recordCommands()
 
 		// bind pipeline to be used with render pass
 		vkCmdBindPipeline(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkGraphicsPipeline);
+
+		VkBuffer vertexBuffers[] = { testMesh.getVertexBuffer() };							// buffers to bind
+		VkDeviceSize offsets[] = { 0 };														// offsets into buffers being bound
+		vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);	// Command to bind vertex buffer before deawing with them
+
+
 		// execute pipeline
-		vkCmdDraw(this->vkCommandBuffers[i], 3, 1, 0, 0);
+		vkCmdDraw(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getVertexCount()), 1, 0, 0);
 
 		// End render pass
 		vkCmdEndRenderPass(this->vkCommandBuffers[i]);
