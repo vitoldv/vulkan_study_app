@@ -27,7 +27,7 @@ int VulkanRenderer::init(GLFWwindow* window)
 		{	{-1, 1, 0.0},	{0.0f, 0.0f, 1}	},
 		};
 		vector<uint32_t> meshIndices = {
-			0, 1, 2
+			1, 2, 3
 		};
 
 		this->testMesh = Mesh(this->vkPhysicalDevice, this->vkLogicalDevice,
@@ -721,7 +721,7 @@ void VulkanRenderer::recordCommands()
 		vkCmdBindIndexBuffer(this->vkCommandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		// execute pipeline
-		vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getIndexCount()), 1, 0, 0, 0);
+		vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getIndexCount()), 1, 0, -1, 0);
 
 		// End render pass
 		vkCmdEndRenderPass(this->vkCommandBuffers[i]);
