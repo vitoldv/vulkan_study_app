@@ -2,6 +2,14 @@
 
 Mesh::Mesh()
 {
+	this->indexCount = 0;
+	this->vertexCount = 0;
+	this->vertexBuffer = VK_NULL_HANDLE;
+	this->vertexBufferMemory = VK_NULL_HANDLE;
+	this->indexBuffer = VK_NULL_HANDLE;
+	this->indexBufferMemory = VK_NULL_HANDLE;
+	this->physicalDevice = VK_NULL_HANDLE;
+	this->logicalDevice = VK_NULL_HANDLE;
 }
 
 Mesh::Mesh(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VkQueue transferQueue,
@@ -15,10 +23,7 @@ Mesh::Mesh(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VkQueue tran
 	createIndexBuffer(transferQueue, transferCommandPool, indices);
 }
 
-Mesh::~Mesh()
-{
-	destroyDataBuffers();
-}
+Mesh::~Mesh() {}
 
 int Mesh::getVertexCount()
 {

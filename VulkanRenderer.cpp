@@ -714,15 +714,14 @@ void VulkanRenderer::recordCommands()
 		// bind pipeline to be used with render pass
 		vkCmdBindPipeline(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkGraphicsPipeline);
 
-		VkBuffer vertexBuffers[] = { testMesh.getVertexBuffer() };							// buffers to bind
+		VkBuffer vertexBuffers[] = { testMesh.getVertexBuffer() };								// buffers to bind
 		VkBuffer indexBuffer = testMesh.getIndexBuffer();
-		VkDeviceSize offsets[] = { 0 };														// offsets into buffers being bound
-		vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);	// Command to bind vertex buffer before deawing with them
-		//vkCmdBindIndexBuffer(this->vkCommandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		VkDeviceSize offsets[] = { 0 };															// offsets into buffers being bound
+		vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);		// Command to bind vertex buffer before deawing with them
+		vkCmdBindIndexBuffer(this->vkCommandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		// execute pipeline
-		vkCmdDraw(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getVertexCount()), 1, 0, 0);
-		//vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getIndexCount()), 1, 0, 0, 0);
+		vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getIndexCount()), 1, 0, 0, 0);
 
 		// End render pass
 		vkCmdEndRenderPass(this->vkCommandBuffers[i]);
