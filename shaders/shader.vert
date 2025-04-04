@@ -13,5 +13,5 @@ layout(location = 0) out vec3 fragCol;
 
 void main() {
     gl_Position = mvp.projection * mvp.view * mvp.model * vec4(pos, 1.0);
-    fragCol = col;
+    fragCol = vec3(1.0, 0.0, 0.0);
 }

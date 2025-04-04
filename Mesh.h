@@ -1,51 +1,47 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <string>
 #include <vector>
-#include "VulkanUtils.h"
-
-struct Vertex
-{
-	glm::vec3 pos;
-	glm::vec3 color;
-};
 
 class Mesh
 {
 
 public:
+	int id;
+	std::string name;
+
 	Mesh();
-	Mesh(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VkQueue transferQueue,
-		VkCommandPool transferCommandPool, std::vector<Vertex>* vertices, std::vector<uint32_t>* indices);
+	Mesh(int id, const char* name, std::vector<glm::vec3> vertices, std::vector<uint32_t> indices);
 	~Mesh();
 
-	int getVertexCount();
-	VkBuffer getVertexBuffer();
-	int getIndexCount();
-	VkBuffer getIndexBuffer();
-	void destroyDataBuffers();
-	glm::mat4 getTransformMat();
-	void setTransformMat(glm::mat4 transform);
+	std::vector<glm::vec3> getVertices();
+	std::vector<uint32_t> getIndices();
+
+    // Copy assignment operator
+    Mesh& operator=(const Mesh& other) {
+        if (this != &other) {
+            id = other.id;
+            name = other.name;
+            vertices = other.vertices;
+            indices = other.indices;
+        }
+        return *this;
+    }
+
+    // Move assignment operator
+    Mesh& operator=(Mesh&& other) noexcept {
+        if (this != &other) {
+            id = other.id;
+            name = std::move(other.name);
+            vertices = std::move(other.vertices);
+            indices = std::move(other.indices);
+        }
+        return *this;
+    }
 
 private:
-	int vertexCount;
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
-
-	int indexCount;
-	VkBuffer indexBuffer; 
-	VkDeviceMemory indexBufferMemory;
-
-	VkPhysicalDevice physicalDevice;
-	VkDevice logicalDevice;
-
-	// Transform
-	glm::mat4 transformMat;
-
-	void createVertexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<Vertex>* vertices);
-	void createIndexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<uint32_t>* indices);
+	std::vector<glm::vec3> vertices;
+	std::vector<uint32_t> indices;
 };
 

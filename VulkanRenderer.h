@@ -10,9 +10,10 @@
 #include <set>
 #include <algorithm>
 #include <array>
+#include "VkMesh.h"
 #include "Mesh.h"
-
 #include "VulkanUtils.h"
+#include <map>
 
 #ifdef NDEBUG
 #define ENABLE_VALIDATION_LAYERS false
@@ -37,7 +38,6 @@ const vector<const char*> deviceExtensions = {
 const vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
-
 
 class VulkanRenderer
 {
@@ -86,14 +86,17 @@ private:
 	// Scene
 	glm::mat4 projectionMat;
 	glm::mat4 viewMat;
+	std::map<int, VkMesh> meshesToRender;
 
-	Mesh testMesh;
 
 public:
 	VulkanRenderer();
 
 	int init(GLFWwindow* window);
 	void draw();
+	bool addToRenderer(Mesh* mesh);
+	bool updateMeshTransform(int meshId, glm::mat4 newTransform);
+	bool removeFromRenderer(Mesh* mesh);
 	void cleanup();
 
 	~VulkanRenderer();

@@ -22,15 +22,6 @@ int VulkanRenderer::init(GLFWwindow* window)
 		createFramebuffers();
 		createCommandPool();
 
-		vector<Vertex> meshVertices = {
-		{	{1, -1, 0.0},	{1, 0.0f, 0.0f}	},
-		{	{1,  1, 0.0},	{0.0f, 1, 0.0f}	},
-		{	{-1, 1, 0.0},	{0.0f, 0.0f, 1}	},
-		};
-		vector<uint32_t> meshIndices = {
-			1, 2, 3
-		};
-
 		this->projectionMat = glm::perspective(glm::radians(75.0f), (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
 		this->viewMat = glm::lookAt(glm::vec3(2.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));		
 
@@ -38,18 +29,11 @@ int VulkanRenderer::init(GLFWwindow* window)
 		// TODO: Inspect this question
 		this->projectionMat[1][1] *= -1;
 
-		this->testMesh = Mesh(this->vkPhysicalDevice, this->vkLogicalDevice,
-			vkGraphicsQueue, vkGraphicsCommandPool, &meshVertices, &meshIndices);
-		this->testMesh.setTransformMat(glm::identity<glm::mat4>());
-
 		createCommandBuffers();
 		createUniformBuffers();
 		createDescriptorPool();
 		createDescriptorSets();
-		recordCommands();
 		createSyncTools();
-
-
 	}
 	catch (const runtime_error &e)
 	{
@@ -62,6 +46,7 @@ int VulkanRenderer::init(GLFWwindow* window)
 
 void VulkanRenderer::cleanup()
 {
+
 	// Wait until there is nothing on a queue 
 	vkDeviceWaitIdle(this->vkLogicalDevice);
 
@@ -73,7 +58,13 @@ void VulkanRenderer::cleanup()
 		vkFreeMemory(this->vkLogicalDevice, uniformBuffersMemory[i], nullptr);
 	}
 	vkDestroyDescriptorSetLayout(this->vkLogicalDevice, this->vkDescriptorSetLayout, nullptr);
-	testMesh.destroyDataBuffers();
+	
+	for (auto mesh : meshesToRender)
+	{
+		mesh.second.destroyDataBuffers();
+	}
+	this->meshesToRender.clear();
+
 	for (int i = 0; i < MAX_FRAME_DRAWS; i++)
 	{
 		vkDestroySemaphore(this->vkLogicalDevice, this->vkSemRenderFinished[i], nullptr);
@@ -806,7 +797,8 @@ void VulkanRenderer::updateUniformBuffers(uint32_t imageIndex)
 	MVP mvp = {};
 	mvp.projection = this->projectionMat;
 	mvp.view = this->viewMat;
-	mvp.model = this->testMesh.getTransformMat();
+	// temporary
+	mvp.model = meshesToRender[1].getTransformMat();
 
 	void* data;
 	vkMapMemory(this->vkLogicalDevice, uniformBuffersMemory[imageIndex], 0, sizeof(MVP), 0, &data);
@@ -848,17 +840,22 @@ void VulkanRenderer::recordCommands()
 		// bind pipeline to be used with render pass
 		vkCmdBindPipeline(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkGraphicsPipeline);
 
-		VkBuffer vertexBuffers[] = { testMesh.getVertexBuffer() };								// buffers to bind
-		VkBuffer indexBuffer = testMesh.getIndexBuffer();
-		VkDeviceSize offsets[] = { 0 };															// offsets into buffers being bound
-		vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);		// Command to bind vertex buffer before deawing with them
-		vkCmdBindIndexBuffer(this->vkCommandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		for (auto pair : meshesToRender)
+		{
+			VkMesh mesh = pair.second;
 
-		vkCmdBindDescriptorSets(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkPipelineLayout,
-			0, 1, &this->vkDescriptorSets[i], 0, nullptr);
+			VkBuffer vertexBuffers[] = { mesh.getVertexBuffer() };															// buffers to bind
+			VkBuffer indexBuffer = mesh.getIndexBuffer();
+			VkDeviceSize offsets[] = { 0 };																					// offsets into buffers being bound
+			vkCmdBindVertexBuffers(this->vkCommandBuffers[i], 0, 1, vertexBuffers, offsets);								// Command to bind vertex buffer before deawing with them
+			vkCmdBindIndexBuffer(this->vkCommandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		// execute pipeline
-		vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(testMesh.getIndexCount()), 1, 0, -1, 0);
+			vkCmdBindDescriptorSets(this->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkPipelineLayout,
+				0, 1, &this->vkDescriptorSets[i], 0, nullptr);
+
+			// execute pipeline
+			vkCmdDrawIndexed(this->vkCommandBuffers[i], static_cast<uint32_t>(mesh.getIndexCount()), 1, 0, -1, 0);
+		}
 
 		// End render pass
 		vkCmdEndRenderPass(this->vkCommandBuffers[i]);
@@ -970,6 +967,56 @@ void VulkanRenderer::draw()
 
 	// Get next frame (use % MAX_FRAME_DRAWS to keep value below MAX_FRAME_DRAWS)
 	currentFrame = (currentFrame + 1) % MAX_FRAME_DRAWS;
+}
+
+bool VulkanRenderer::addToRenderer(Mesh* mesh)
+{
+	// If mesh is not in renderer
+	if (meshesToRender.find(mesh->id) == meshesToRender.end())
+	{
+		VkMesh newMesh;
+		std::vector<Vertex> vertices;
+		auto meshVertices = mesh->getVertices();
+		auto meshIndices = mesh->getIndices();
+		for (int i = 0; i < meshVertices.size(); i++)
+		{
+			Vertex vertex = {};
+			vertex.pos = meshVertices[i];
+			vertices.push_back(vertex);
+		}
+		newMesh = VkMesh(this->vkPhysicalDevice, this->vkLogicalDevice,
+			this->vkGraphicsQueue, this->vkGraphicsCommandPool, &vertices, &meshIndices);
+		newMesh.setTransformMat(glm::identity<glm::mat4>());
+		meshesToRender[mesh->id] = newMesh;
+
+		recordCommands();
+
+		return true;
+	}
+
+	return false;
+}
+
+bool VulkanRenderer::updateMeshTransform(int meshId, glm::mat4 newTransform)
+{
+	if (meshesToRender.find(meshId) != meshesToRender.end())
+	{
+		meshesToRender[meshId].setTransformMat(newTransform);
+		return true;
+	}
+
+	return false;
+}
+
+bool VulkanRenderer::removeFromRenderer(Mesh* mesh)
+{
+	if (meshesToRender.find(mesh->id) != meshesToRender.end())
+	{
+		meshesToRender.erase(mesh->id);
+		return true;
+	}
+
+	return false;
 }
 
 
