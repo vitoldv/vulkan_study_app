@@ -721,6 +721,7 @@ void VulkanRenderer::createDescriptorPool()
 	createInfo.poolSizeCount = 1;
 	createInfo.pPoolSizes;
 	createInfo.pPoolSizes = &poolSize;
+	createInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
 	VkResult result = vkCreateDescriptorPool(this->vkLogicalDevice, &createInfo, nullptr, &this->vkDescriptorPool);
 	if (result != VK_SUCCESS)
