@@ -11,10 +11,19 @@
 #define WINDOW_WIDTH	800
 #define WINDOW_HEIGHT	600
 
+#define FPS_LIMIT 1
+#define TARGET_FPS 60
+#define TARGET_FRAME_TIME (1000 / TARGET_FPS)
+
 using namespace std;
 
 GLFWwindow* window;
 VulkanRenderer vulkanRenderer;
+
+// time and fps
+int previousFrameTime = 0;
+int currentFrameTime = 0;
+float deltaTime = 0;
 
 void initWindow(string title, const int width, const int height)
 {
@@ -36,11 +45,20 @@ int main()
 		return EXIT_FAILURE;
 	}
 
+	float frameTime = 0;
 	// Loop until window is closed
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 		vulkanRenderer.draw();
+		
+		currentFrameTime = glfwGetTime() * 1000.0f;
+		frameTime = currentFrameTime - previousFrameTime;
+
+		if (FPS_LIMIT == 1 && frameTime < TARGET_FRAME_TIME) continue;
+
+		deltaTime = frameTime / 1000.0f;
+		previousFrameTime = currentFrameTime;
 	}
 
 	vulkanRenderer.cleanup();
