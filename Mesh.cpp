@@ -54,6 +54,16 @@ void Mesh::destroyDataBuffers()
 	vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
 }
 
+glm::mat4 Mesh::getTransformMat()
+{
+	return this->transformMat;
+}
+
+void Mesh::setTransformMat(glm::mat4 transform)
+{
+	this->transformMat = transform;
+}
+
 void Mesh::createVertexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<Vertex>* vertices)
 {
 	// Size of buffer needed for vertices

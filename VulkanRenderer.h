@@ -2,6 +2,7 @@
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
 #include <stdexcept>
 #include <iostream>
 #include <vector>
@@ -68,12 +69,23 @@ private:
 	VkDebugUtilsMessengerEXT debugMessenger;
 #endif
 
+	// Descriptors
+	VkDescriptorSetLayout vkDescriptorSetLayout;
+	VkDescriptorPool vkDescriptorPool;
+	vector<VkDescriptorSet> vkDescriptorSets;
+	vector<VkBuffer> uniformBuffers;
+	vector<VkDeviceMemory> uniformBuffersMemory;
+
 	// Utility
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
 	vector<VkSemaphore> vkSemImageAvailable;
 	vector<VkSemaphore> vkSemRenderFinished;
 	vector<VkFence> vkDrawFences;
+
+	// Scene
+	glm::mat4 projectionMat;
+	glm::mat4 viewMat;
 
 	Mesh testMesh;
 
@@ -99,6 +111,10 @@ private:
 	void createCommandPool();
 	void createCommandBuffers();
 	void createSyncTools();
+	void createDescriptorSetLayout();
+	void createUniformBuffers();
+	void createDescriptorPool();
+	void createDescriptorSets();
 
 	void setupDebugMessenger();
 
@@ -108,6 +124,7 @@ private:
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	VkShaderModule createShaderModule(const vector<char>& code);
 	void recordCommands();
+	void updateUniformBuffers(uint32_t imageIndex);
 
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);
 	bool isDeviceSupportsRequiredExtensions(VkPhysicalDevice device);

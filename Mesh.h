@@ -27,6 +27,8 @@ public:
 	int getIndexCount();
 	VkBuffer getIndexBuffer();
 	void destroyDataBuffers();
+	glm::mat4 getTransformMat();
+	void setTransformMat(glm::mat4 transform);
 
 private:
 	int vertexCount;
@@ -39,6 +41,9 @@ private:
 
 	VkPhysicalDevice physicalDevice;
 	VkDevice logicalDevice;
+
+	// Transform
+	glm::mat4 transformMat;
 
 	void createVertexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<Vertex>* vertices);
 	void createIndexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<uint32_t>* indices);
