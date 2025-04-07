@@ -13,6 +13,11 @@ struct Vertex
 	glm::vec3 color;
 };
 
+struct UboModel
+{
+	glm::mat4 modelMat;
+};
+
 class VkMesh
 {
 
@@ -26,9 +31,12 @@ public:
 	VkBuffer getVertexBuffer();
 	int getIndexCount();
 	VkBuffer getIndexBuffer();
-	void destroyDataBuffers();
+	UboModel getModelMatrix();
 	glm::mat4 getTransformMat();
+
 	void setTransformMat(glm::mat4 transform);
+
+	void destroyDataBuffers();
 
 private:
 	int vertexCount;
@@ -44,6 +52,8 @@ private:
 
 	// Transform
 	glm::mat4 transformMat;
+
+	UboModel uboModel;
 
 	void createVertexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<Vertex>* vertices);
 	void createIndexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<uint32_t>* indices);

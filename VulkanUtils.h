@@ -12,11 +12,20 @@ using namespace std;
 #define VALIDATION_LAYER_ALLOWED_MESSAGE_SEVERITY VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
 #define VALIDATION_LAYER_ALLOWED_MESSAGE_TYPE VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
 
-struct MVP
+struct UboProjectionView
 {
 	glm::mat4 projection;
 	glm::mat4 view;
-	glm::mat4 model;
+};
+
+const vector<glm::vec3> meshVertices = {
+	{-1, -1, 0.0},
+	{1,  -1, 0.0},
+	{1,  1, 0.0},
+	{-1, 1, 0.0},
+};
+const vector<uint32_t> meshIndices = {
+	1, 2, 3, 1, 3, 4
 };
 
 // Indices (locations) of Queue Families (if they exist at all)

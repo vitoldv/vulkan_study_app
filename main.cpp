@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/vec3.hpp>
 
 #include <iostream>
 #include <vector>
@@ -15,7 +16,7 @@
 #define WINDOW_WIDTH		800
 #define WINDOW_HEIGHT		600
 
-#define FPS_LIMIT			1
+#define FPS_LIMIT			true
 #define TARGET_FPS			60
 #define TARGET_FRAME_TIME	(1000 / TARGET_FPS)
 
@@ -30,6 +31,7 @@ int currentFrameTime = 0;
 float deltaTime = 0;
 
 Mesh mesh;
+Mesh mesh2;
 glm::vec3 meshPosition = {0.0, 0.0, 0.0};
 
 void initWindow(string title, const int width, const int height)
@@ -56,9 +58,10 @@ void processInput()
 
 void update()
 {
-	glm::mat4 i = glm::identity<glm::mat4>();
-	glm::mat4 t = glm::translate(i, meshPosition);
-	vulkanRenderer.updateMeshTransform(mesh.id, t);
+	glm::mat4 t1 = glm::translate(glm::mat4(1.0f), meshPosition * -1.0f);
+	glm::mat4 t2 = glm::translate(glm::mat4(1.0f), meshPosition);
+	vulkanRenderer.updateMeshTransform(mesh.id, t1);
+	vulkanRenderer.updateMeshTransform(mesh2.id, t2);
 }
 
 void render()
@@ -68,15 +71,8 @@ void render()
 
 int main()
 {
-	vector<glm::vec3> meshVertices = {
-		{1, -1, 0.0},
-		{1,  1, 0.0},
-		{-1, 1, 0.0},
-	};
-	vector<uint32_t> meshIndices = {
-		1, 2, 3
-	};
 	mesh = Mesh(1, "testMesh", meshVertices, meshIndices);
+	mesh2 = Mesh(2, "testMesh2", meshVertices, meshIndices);
 
 	// Initialize window
 	initWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -87,6 +83,7 @@ int main()
 	}
 
 	vulkanRenderer.addToRenderer(&mesh);
+	vulkanRenderer.addToRenderer(&mesh2);
 
 	float frameTime = 0;
 	// Loop until window is closed
@@ -97,7 +94,7 @@ int main()
 		currentFrameTime = glfwGetTime() * 1000.0f;
 		frameTime = currentFrameTime - previousFrameTime;
 
-		if (FPS_LIMIT == 1 && frameTime < TARGET_FRAME_TIME) continue;
+		if (FPS_LIMIT && frameTime < TARGET_FRAME_TIME) continue;
 
 		deltaTime = frameTime / 1000.0f;
 		previousFrameTime = currentFrameTime;

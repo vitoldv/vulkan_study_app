@@ -27,6 +27,8 @@
 #define SURFACE_PRESENTATION_MODE	VK_PRESENT_MODE_MAILBOX_KHR
 
 #define MAX_FRAME_DRAWS 2
+#define MAX_OBJECTS 2
+
 
 using namespace std;
 
@@ -75,6 +77,12 @@ private:
 	vector<VkDescriptorSet> vkDescriptorSets;
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
+	vector<VkBuffer> uniformBuffersDynamic;
+	vector<VkDeviceMemory> uniformBuffersMemoryDynamic;
+
+	VkDeviceSize minUniformBufferOffset;
+	size_t modelUniformAlignment;
+	UboModel* modelTransferSpace;
 
 	// Utility
 	VkFormat swapChainImageFormat;
@@ -82,6 +90,8 @@ private:
 	vector<VkSemaphore> vkSemImageAvailable;
 	vector<VkSemaphore> vkSemRenderFinished;
 	vector<VkFence> vkDrawFences;
+
+
 
 	// Scene
 	glm::mat4 projectionMat;
@@ -128,6 +138,8 @@ private:
 	VkShaderModule createShaderModule(const vector<char>& code);
 	void recordCommands();
 	void updateUniformBuffers(uint32_t imageIndex);
+	void allocateDynamicBufferTransferSpace();
+
 
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);
 	bool isDeviceSupportsRequiredExtensions(VkPhysicalDevice device);
@@ -136,6 +148,7 @@ private:
 	QueueFamilyIndices getQueueFamilies(VkPhysicalDevice device);
 	SwapChainDetails getSwapChainDetails(VkPhysicalDevice device);
 	bool checkValidationLayerSupport();
+
 
 	void printPhysicalDeviceInfo(VkPhysicalDevice device, bool printPropertiesFull = false, bool printFeaturesFull = false);
 };
