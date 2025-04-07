@@ -77,12 +77,15 @@ private:
 	vector<VkDescriptorSet> vkDescriptorSets;
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
-	vector<VkBuffer> uniformBuffersDynamic;
-	vector<VkDeviceMemory> uniformBuffersMemoryDynamic;
-
 	VkDeviceSize minUniformBufferOffset;
-	size_t modelUniformAlignment;
-	UboModel* modelTransferSpace;
+	VkPushConstantRange vkPushConstantRange;
+
+	// LEFT FOR REFERENCE ON DYNAMIC UNIFORM BUFFERS
+	// UboModel* modelTransferSpace;	
+	// size_t modelUniformAlignment;
+	//vector<VkBuffer> uniformBuffersDynamic;
+	//vector<VkDeviceMemory> uniformBuffersMemoryDynamic;
+	
 
 	// Utility
 	VkFormat swapChainImageFormat;
@@ -128,6 +131,7 @@ private:
 	void createUniformBuffers();
 	void createDescriptorPool();
 	void createDescriptorSets();
+	void createPushConstantRange();
 
 	void setupDebugMessenger();
 
@@ -136,9 +140,11 @@ private:
 	VkExtent2D defineSwapChainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	VkShaderModule createShaderModule(const vector<char>& code);
-	void recordCommands();
+	void recordCommands(uint32_t currentImage);
 	void updateUniformBuffers(uint32_t imageIndex);
-	void allocateDynamicBufferTransferSpace();
+	
+	// LEFT FOR REFERENCE ON DYNAMIC UNIFORM BUFFERS
+	//void allocateDynamicBufferTransferSpace();
 
 
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);

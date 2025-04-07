@@ -10,7 +10,6 @@ VkMesh::VkMesh()
 	this->indexBufferMemory = VK_NULL_HANDLE;
 	this->physicalDevice = VK_NULL_HANDLE;
 	this->logicalDevice = VK_NULL_HANDLE;
-	uboModel.modelMat = glm::mat4(1.0f);
 }
 
 VkMesh::VkMesh(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VkQueue transferQueue,
@@ -46,11 +45,6 @@ VkBuffer VkMesh::getIndexBuffer()
 	return this->indexBuffer;
 }
 
-UboModel VkMesh::getModelMatrix()
-{
-	return uboModel;
-}
-
 
 void VkMesh::destroyDataBuffers()
 {
@@ -69,7 +63,6 @@ glm::mat4 VkMesh::getTransformMat()
 void VkMesh::setTransformMat(glm::mat4 transform)
 {
 	this->transformMat = transform;
-	this->uboModel.modelMat = transform;
 }
 
 void VkMesh::createVertexBuffer(VkQueue transferQueue, VkCommandPool transferCommandPool, std::vector<Vertex>* vertices)

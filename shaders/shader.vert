@@ -8,13 +8,18 @@ layout(binding = 0) uniform UboProjectionView {
     mat4 view;    
 } uboProjectionView;
 
-layout(binding = 1) uniform UboModel {
-    mat4 model;  
-} uboModel;
+// LEFT FOR REFERENCE ON DYNAMIC UNIFORM BUFFERS
+// layout(binding = 1) uniform UboModel {
+//     mat4 model;  
+// } uboModel;
+
+layout(push_constant) uniform PushModel {
+    mat4 model;
+} pushModel;
 
 layout(location = 0) out vec3 fragCol;
 
 void main() {
-    gl_Position = uboProjectionView.projection * uboProjectionView.view * uboModel.model * vec4(pos, 1.0);
+    gl_Position = uboProjectionView.projection * uboProjectionView.view * pushModel.model * vec4(pos, 1.0);
     fragCol = vec3(1.0, 0.0, 0.0);
 }
