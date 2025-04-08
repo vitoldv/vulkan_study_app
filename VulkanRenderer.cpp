@@ -31,6 +31,8 @@ int VulkanRenderer::init(GLFWwindow* window)
 		// TODO: Inspect this question
 		this->projectionMat[1][1] *= -1;
 
+		int texture = createTexture("bob.jpg");
+
 		createCommandBuffers();
 		createUniformBuffers();
 		createDescriptorPool();
@@ -51,6 +53,12 @@ void VulkanRenderer::cleanup()
 
 	// Wait until there is nothing on a queue 
 	vkDeviceWaitIdle(this->vkLogicalDevice);
+
+	for (int i = 0; i < textureImages.size(); i++)
+	{
+		vkDestroyImage(this->vkLogicalDevice, textureImages[i], nullptr);
+		vkFreeMemory(this->vkLogicalDevice, textureImageMemory[i], nullptr);
+	}
 
 	// LEFT FOR REFERENCE ON DYNAMIC UNIFORM BUFFERS
 	//_aligned_free(modelTransferSpace);
@@ -1220,6 +1228,55 @@ void VulkanRenderer::setupDebugMessenger()
 	}
 }
 
+int VulkanRenderer::createTexture(std::string fileName)
+{
+	int width, height;
+	VkDeviceSize imageSize;
+	stbi_uc* imageData = loadTexture(fileName, &width, &height, &imageSize);
+
+	// Create staging buffer to hold loaded data ready to copy to device
+	VkBuffer imageStagingBuffer;
+	VkDeviceMemory imageStagingBufferMemory;
+	createBuffer(this->vkPhysicalDevice, this->vkLogicalDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &imageStagingBuffer, &imageStagingBufferMemory);
+
+	// copy image data to staging buffer
+	void* data;
+	vkMapMemory(this->vkLogicalDevice, imageStagingBufferMemory, 0, imageSize, 0, &data);
+	memcpy(data, imageData, static_cast<size_t>(imageSize));
+	vkUnmapMemory(this->vkLogicalDevice, imageStagingBufferMemory);
+
+	stbi_image_free(imageData);
+
+	// Create image to hold final texture
+	VkImage texImage;
+	VkDeviceMemory texImageMemory;
+
+	texImage = createImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &texImageMemory);
+
+	// COPY IMAGE DATA
+	// transition image to be DST for copy operation
+	transitionImageLayout(this->vkLogicalDevice, this->vkGraphicsQueue, this->vkGraphicsCommandPool,
+		texImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	copyImageBuffer(this->vkLogicalDevice, vkGraphicsQueue, vkGraphicsCommandPool, imageStagingBuffer, texImage, width, height);
+
+	// transition image to be shader readable for shader usage
+	transitionImageLayout(this->vkLogicalDevice, this->vkGraphicsQueue, this->vkGraphicsCommandPool,
+		texImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	// Add texture data to vector for reference
+	textureImages.push_back(texImage);
+	textureImageMemory.push_back(texImageMemory);
+
+	// Destory staging buffers
+	vkDestroyBuffer(this->vkLogicalDevice, imageStagingBuffer, nullptr);
+	vkFreeMemory(this->vkLogicalDevice, imageStagingBufferMemory, nullptr);
+
+	// return the index of new texture
+	return textureImages.size() - 1;
+}
+
 /// <summary>
 /// Checks whethers passed extensions are supported by Vulkan Instance.
 /// </summary>
@@ -1491,6 +1548,23 @@ void VulkanRenderer::printPhysicalDeviceInfo(VkPhysicalDevice device, bool print
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 	
 	// TODO Print device features info
+}
+
+stbi_uc* VulkanRenderer::loadTexture(std::string fileName, int* width, int* height, VkDeviceSize* imageSize)
+{
+	std::string fileLocation = "VulkanCourseApp/assets/" + fileName;
+	
+	int channels;
+	stbi_uc* image = stbi_load(fileLocation.c_str(), width, height, &channels, STBI_rgb_alpha);
+	if (!image)
+	{
+		throw runtime_error("Failed to load texture \"" + fileName + "\".");
+	}
+
+	// calculate image size
+	*imageSize = *width * *height * 4;  
+
+	return image;
 }
 
 VkShaderModule VulkanRenderer::createShaderModule(const vector<char>& code)

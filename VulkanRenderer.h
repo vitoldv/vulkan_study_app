@@ -16,6 +16,7 @@
 #include "Mesh.h"
 #include "VulkanUtils.h"
 #include <map>
+#include "stb_image.h"
 
 #ifdef NDEBUG
 #define ENABLE_VALIDATION_LAYERS false
@@ -101,13 +102,12 @@ private:
 	vector<VkSemaphore> vkSemRenderFinished;
 	vector<VkFence> vkDrawFences;
 
-
-
 	// Scene
 	glm::mat4 projectionMat;
 	glm::mat4 viewMat;
 	std::map<int, VkMesh> meshesToRender;
-
+	std::vector<VkImage> textureImages;
+	std::vector<VkDeviceMemory> textureImageMemory;
 
 public:
 	VulkanRenderer();
@@ -140,6 +140,7 @@ private:
 	void createDescriptorPool();
 	void createDescriptorSets();
 	void createPushConstantRange();
+	int createTexture(std::string fileName);
 
 	void setupDebugMessenger();
 
@@ -157,7 +158,6 @@ private:
 	// LEFT FOR REFERENCE ON DYNAMIC UNIFORM BUFFERS
 	//void allocateDynamicBufferTransferSpace();
 
-
 	bool isInstanceExtensionsSupported(vector<const char*>* extensions);
 	bool isDeviceSupportsRequiredExtensions(VkPhysicalDevice device);
 	bool isDeviceSuitable(VkPhysicalDevice device);
@@ -166,6 +166,7 @@ private:
 	SwapChainDetails getSwapChainDetails(VkPhysicalDevice device);
 	bool checkValidationLayerSupport();
 
+	stbi_uc* loadTexture(std::string fileName, int* width, int* height, VkDeviceSize* imageSize);
 
 	void printPhysicalDeviceInfo(VkPhysicalDevice device, bool printPropertiesFull = false, bool printFeaturesFull = false);
 };
