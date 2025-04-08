@@ -21,5 +21,5 @@ layout(location = 0) out vec3 fragCol;
 
 void main() {
     gl_Position = uboProjectionView.projection * uboProjectionView.view * pushModel.model * vec4(pos, 1.0);
-    fragCol = vec3(1.0, 0.0, 0.0);
+    fragCol = col;
 }

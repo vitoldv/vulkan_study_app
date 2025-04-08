@@ -32,12 +32,13 @@ float deltaTime = 0;
 
 Mesh mesh;
 Mesh mesh2;
-glm::vec3 meshPosition = {0.0, 0.0, 0.0};
+glm::vec3 meshPosition = {-1.0, 0.0, 0.0};
+glm::vec3 mesh2Position = {0.0, 0.0, 1.0};
 
 void initWindow(string title, const int width, const int height)
 {
 	glfwInit();
-	// Set GLFW to NOW work with OpenGL
+	// Set GLFW to NOT work with OpenGL
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
@@ -59,7 +60,7 @@ void processInput()
 void update()
 {
 	glm::mat4 t1 = glm::translate(glm::mat4(1.0f), meshPosition * -1.0f);
-	glm::mat4 t2 = glm::translate(glm::mat4(1.0f), meshPosition);
+	glm::mat4 t2 = glm::translate(glm::mat4(1.0f), mesh2Position) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
 	vulkanRenderer.updateMeshTransform(mesh.id, t1);
 	vulkanRenderer.updateMeshTransform(mesh2.id, t2);
 }
@@ -82,8 +83,8 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	vulkanRenderer.addToRenderer(&mesh);
-	vulkanRenderer.addToRenderer(&mesh2);
+	vulkanRenderer.addToRenderer(&mesh, glm::vec3(1.0f));
+	vulkanRenderer.addToRenderer(&mesh2, glm::vec3(0.0f));
 
 	float frameTime = 0;
 	// Loop until window is closed

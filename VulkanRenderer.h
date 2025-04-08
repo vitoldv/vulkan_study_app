@@ -1,6 +1,8 @@
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdexcept>
@@ -66,6 +68,11 @@ private:
 	VkCommandPool vkGraphicsCommandPool;
 	vector<VkCommandBuffer> vkCommandBuffers;
 
+	VkImage depthBufferImage;
+	VkDeviceMemory depthBufferImageMemory;
+	VkImageView depthBufferImageView;
+	VkFormat depthFormat;
+
 	// Extension Vulkan Components
 #ifndef NDEBUG
 	VkDebugUtilsMessengerEXT debugMessenger;
@@ -107,7 +114,7 @@ public:
 
 	int init(GLFWwindow* window);
 	void draw();
-	bool addToRenderer(Mesh* mesh);
+	bool addToRenderer(Mesh* mesh, glm::vec3 color);
 	bool updateMeshTransform(int meshId, glm::mat4 newTransform);
 	bool removeFromRenderer(Mesh* mesh);
 	void cleanup();
@@ -123,6 +130,7 @@ private:
 	void createSwapChain();
 	void createRenderPass();
 	void createGraphicsPipeline();
+	void createDepthBuffer();
 	void createFramebuffers();
 	void createCommandPool();
 	void createCommandBuffers();
@@ -138,7 +146,10 @@ private:
 	VkSurfaceFormatKHR defineSurfaceFormat(const vector<VkSurfaceFormatKHR>& formats);
 	VkPresentModeKHR definePresentationMode(const vector<VkPresentModeKHR> presentationModes);
 	VkExtent2D defineSwapChainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
+	VkFormat defineSupportedFormat(const vector<VkFormat>& formats, VkImageTiling tiling, VkFormatFeatureFlags featureFlags);
 	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+	VkImage createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags userFlags,
+		VkMemoryPropertyFlags propertyFlags, VkDeviceMemory* imageMemory);
 	VkShaderModule createShaderModule(const vector<char>& code);
 	void recordCommands(uint32_t currentImage);
 	void updateUniformBuffers(uint32_t imageIndex);
