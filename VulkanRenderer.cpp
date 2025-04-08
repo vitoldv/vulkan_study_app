@@ -972,8 +972,9 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 	renderPassBeginInfo.renderArea.offset = { 0,0 };						// start point of render pass
 	renderPassBeginInfo.renderArea.extent = swapChainExtent;
 	
+	auto backgroundColor = getRGBANormalized(BACKGROUND_COLOR);
 	std::array<VkClearValue, 2> clearValues = {};
-	clearValues[0].color = { 0.6f, 0.65f, 0.4f, 1.0f };
+	clearValues[0].color = {  backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3] };
 	clearValues[1].depthStencil.depth = 1.0f;
 
 	renderPassBeginInfo.pClearValues = clearValues.data();							// list of clear values
