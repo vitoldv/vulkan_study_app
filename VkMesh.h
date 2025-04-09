@@ -11,6 +11,7 @@ struct Vertex
 {
 	glm::vec3 pos;
 	glm::vec3 color;
+	glm::vec2 uv;
 };
 
 class VkMesh
@@ -19,18 +20,21 @@ class VkMesh
 public:
 	VkMesh();
 	VkMesh(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VkQueue transferQueue,
-		VkCommandPool transferCommandPool, std::vector<Vertex>* vertices, std::vector<uint32_t>* indices);
+		VkCommandPool transferCommandPool, std::vector<Vertex>* vertices, std::vector<uint32_t>* indices,
+		int textureIndex);
 	~VkMesh();
 
 	int getVertexCount();
 	VkBuffer getVertexBuffer();
 	int getIndexCount();
 	VkBuffer getIndexBuffer();
+	int getTextureIndex();
 	glm::mat4 getTransformMat();
 
 	void setTransformMat(glm::mat4 transform);
 
 	void destroyDataBuffers();
+
 
 private:
 	int vertexCount;
@@ -40,6 +44,8 @@ private:
 	int indexCount;
 	VkBuffer indexBuffer; 
 	VkDeviceMemory indexBufferMemory;
+
+	int textureIndex;
 
 	VkPhysicalDevice physicalDevice;
 	VkDevice logicalDevice;

@@ -74,8 +74,8 @@ void render()
 
 int main()
 {
-	mesh = Mesh(1, "testMesh", meshVertices, meshIndices);
-	mesh2 = Mesh(2, "testMesh2", meshVertices, meshIndices);
+	mesh = Mesh(1, "testMesh", meshVertices, meshIndices, meshTexCoords);
+	mesh2 = Mesh(2, "testMesh2", meshVertices, meshIndices, meshTexCoords);
 
 	// Initialize window
 	initWindow(WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -85,8 +85,8 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	vulkanRenderer.addToRenderer(&mesh, glm::vec3(1.0f));
-	vulkanRenderer.addToRenderer(&mesh2, glm::vec3(0.0f));
+	vulkanRenderer.addToRendererTextured(&mesh, "VulkanCourseApp/assets/bob.jpg");
+	vulkanRenderer.addToRendererTextured(&mesh2, "VulkanCourseApp/assets/patrick.jpg");
 
 	float frameTime = 0;
 	// Loop until window is closed

@@ -83,8 +83,10 @@ private:
 
 	// Descriptors
 	VkDescriptorSetLayout vkDescriptorSetLayout;
+	VkDescriptorSetLayout vkSamplerDescriptorSetLayout;
 	VkDescriptorPool vkDescriptorPool;
 	vector<VkDescriptorSet> vkDescriptorSets;
+	vector<VkDescriptorSet> vkSamplerDescriptorSets;
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	VkDeviceSize minUniformBufferOffset;
@@ -108,8 +110,12 @@ private:
 	glm::mat4 projectionMat;
 	glm::mat4 viewMat;
 	std::map<int, VkMesh> meshesToRender;
+
+	// Textures
+	VkSampler vkTextureSampler;
 	std::vector<VkImage> textureImages;
 	std::vector<VkDeviceMemory> textureImageMemory;
+	std::vector<VkImageView> textureImageViews;
 
 public:
 	VulkanRenderer();
@@ -117,6 +123,7 @@ public:
 	int init(GLFWwindow* window);
 	void draw();
 	bool addToRenderer(Mesh* mesh, glm::vec3 color);
+	bool addToRendererTextured(Mesh* mesh, std::string textureFile);
 	bool updateMeshTransform(int meshId, glm::mat4 newTransform);
 	bool removeFromRenderer(Mesh* mesh);
 	void cleanup();
@@ -142,6 +149,9 @@ private:
 	void createDescriptorPool();
 	void createDescriptorSets();
 	void createPushConstantRange();
+	void createTextureSampler();
+	int createTextureSamplerDescriptor(VkImageView textureImageView);
+	int createTextureImage(std::string fileName);
 	int createTexture(std::string fileName);
 
 	void setupDebugMessenger();

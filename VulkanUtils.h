@@ -29,6 +29,13 @@ const vector<uint32_t> meshIndices = {
 	1, 2, 3, 1, 3, 4
 };
 
+const vector<glm::vec2> meshTexCoords = {
+	{0.0f, 1.0f},
+	{1.0f, 1.0f},
+	{1.0f, 0.0f},
+	{0.0f, 0.0f}
+};
+
 // Indices (locations) of Queue Families (if they exist at all)
 struct QueueFamilyIndices
 {
