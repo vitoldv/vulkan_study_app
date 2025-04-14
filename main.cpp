@@ -39,10 +39,23 @@ float deltaTime = 0;
 int modelId;
 float angleRot = 0;
 
+std::vector<std::string> modelTextures;
+
 std::vector<Mesh> importModel(std::string fileName)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
+
+	// Collect all diffuse textures
+	for (int i = 0; i < scene->mNumMaterials; i++)
+	{
+		auto mat = scene->mMaterials[i];
+		aiString path;
+		if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS)
+		{
+			modelTextures.push_back(path.C_Str());
+		}
+	}
 
 	std::vector<Mesh> model(scene->mNumMeshes);
 	for (int i = 0; i < scene->mNumMeshes; i++)
@@ -65,7 +78,23 @@ std::vector<Mesh> importModel(std::string fileName)
 			indices[j * 3 + 1] = face.mIndices[1] + 1;
 			indices[j * 3 + 2] = face.mIndices[2] + 1;
 		}
+
 		Mesh mesh = Mesh(i, meshData->mName.C_Str(), vertices, indices, texCoords, normals);
+
+		// If mesh has a material assigned and this material has a diffuse texture
+		// we find and save the index of that texture in textures vector
+		if (meshData->mMaterialIndex >= 0)
+		{
+			auto mat = scene->mMaterials[meshData->mMaterialIndex];
+
+			aiString path;
+			if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &path) == aiReturn_SUCCESS)
+			{
+				auto pos = std::find(modelTextures.begin(), modelTextures.end(), path.C_Str());
+				mesh.textureIndex = std::distance(modelTextures.begin(), pos);
+			}
+		}
+
 		model[i] = mesh;
 	}
 
@@ -114,6 +143,7 @@ int main()
 	for (int i = 0; i < model.size(); i++)
 	{
 		vulkanRenderer.addToRenderer(modelId, model.size(), model.data(), glm::vec3(0.8f, 0.8f, 0.8f));
+		//vulkanRenderer.addToRendererTextured(modelId, model.size(), model.data(), modelTextures);
 	}
 
 	float frameTime = 0;

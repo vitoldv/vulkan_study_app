@@ -1256,34 +1256,44 @@ bool VulkanRenderer::addToRenderer(int modelId, int meshCount, Mesh* meshList, g
 	return false;
 }
 
-//bool VulkanRenderer::addToRendererTextured(Mesh* mesh, std::string textureFile)
-//{
-//	// If mesh is not in renderer
-//	if (meshesToRender.find(mesh->id) == meshesToRender.end())
-//	{
-//		VkMesh newMesh;
-//		std::vector<Vertex> vertices;
-//		auto meshVertices = mesh->getVertices();
-//		auto meshIndices = mesh->getIndices();
-//		auto meshTexCoords = mesh->getTexCoords();
-//		for (int i = 0; i < meshVertices.size(); i++)
-//		{
-//			Vertex vertex = {};
-//			vertex.pos = meshVertices[i];
-//			vertex.uv = meshTexCoords[i];
-//			vertices.push_back(vertex);
-//		}
-//		int textureDescriptorIndex = createTexture(textureFile);
-//		newMesh = VkMesh(this->vkPhysicalDevice, this->vkLogicalDevice,
-//			this->vkGraphicsQueue, this->vkGraphicsCommandPool, &vertices, &meshIndices, textureDescriptorIndex);
-//		newMesh.setTransformMat(glm::identity<glm::mat4>());
-//		meshesToRender[mesh->id] = newMesh;
-//
-//		return true;
-//	}
-//
-//	return false;
-//}
+bool VulkanRenderer::addToRendererTextured(int modelId, int meshCount, Mesh* meshList, std::vector<std::string> textureFiles)
+{
+	// If mesh is not in renderer
+	if (modelsToRender.find(modelId) == modelsToRender.end())
+	{
+		for (int i = 0; i < meshCount; i++)
+		{
+			VkMesh newMesh;
+			Mesh* mesh = &meshList[i];
+			std::vector<Vertex> vertices;
+			auto meshVertices = mesh->getVertices();
+			auto meshIndices = mesh->getIndices();
+			auto meshTexCoords = mesh->getTexCoords();
+			auto meshNormals = mesh->getNormals();
+
+			for (int i = 0; i < meshVertices.size(); i++)
+			{
+				Vertex vertex = {};
+				vertex.pos = meshVertices[i];
+				vertex.normal = meshNormals[i];
+				vertex.uv = meshTexCoords[i];
+				vertices.push_back(vertex);
+			}
+			int textureDescriptorIndex = -1;
+			if (mesh->textureIndex >= 0 && mesh->textureIndex < textureFiles.size())
+			{
+				textureDescriptorIndex = createTexture(textureFiles[mesh->textureIndex]);
+			}
+			newMesh = VkMesh(this->vkPhysicalDevice, this->vkLogicalDevice,
+				this->vkGraphicsQueue, this->vkGraphicsCommandPool, &vertices, &meshIndices, textureDescriptorIndex);
+			newMesh.setTransformMat(glm::identity<glm::mat4>());
+			modelsToRender[modelId][mesh->id] = newMesh;
+		}
+		return true;
+	}
+
+	return false;
+}
 
 bool VulkanRenderer::updateModelTransform(int modelId, glm::mat4 newTransform)
 {

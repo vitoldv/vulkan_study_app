@@ -124,9 +124,9 @@ public:
 	void draw();
 	//bool addToRenderer(Mesh* mesh, glm::vec3 color);
 	bool addToRenderer(int modelId, int meshCount, Mesh* mesh, glm::vec3 color);
-	//bool addToRendererTextured(Mesh* mesh, std::string textureFile);
+	bool addToRendererTextured(int modelId, int meshCount, Mesh* mesh, std::vector<std::string> textureFiles);
 	bool updateModelTransform(int modelId, glm::mat4 newTransform);
-	bool removeFromRenderer(int modelId);
+	bool removeFromRenderer(int modelId);	
 	void cleanup();
 
 	~VulkanRenderer();

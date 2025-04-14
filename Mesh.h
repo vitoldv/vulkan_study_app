@@ -10,6 +10,7 @@ class Mesh
 public:
 	int id;
 	std::string name;
+    int textureIndex;
 
 	Mesh();
 	Mesh(int id, const char* name, std::vector<glm::vec3> vertices, std::vector<uint32_t> indices,
@@ -30,6 +31,7 @@ public:
             indices = other.indices;
             texCoords = other.texCoords;
             normals = other.normals;
+            textureIndex = other.textureIndex;
         }
         return *this;
     }
@@ -43,6 +45,7 @@ public:
             indices = std::move(other.indices);
             texCoords = std::move(other.texCoords);
             normals = std::move(other.normals);
+            textureIndex = other.textureIndex;
         }
         return *this;
     }
