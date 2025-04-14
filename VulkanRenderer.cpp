@@ -30,8 +30,8 @@ int VulkanRenderer::init(GLFWwindow* window)
 		createDescriptorSets();
 		createSyncTools();
 
-		this->projectionMat = glm::perspective(glm::radians(75.0f), (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 100.0f);
-		this->viewMat = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		this->projectionMat = glm::perspective(glm::radians(75.0f), (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 200.0f);
+		this->viewMat = glm::lookAt(glm::vec3(0.0f, 0.0f, 100.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// Seems like Vulkan flips Y coordinate (which is weird).
 		// TODO: Inspect this question
@@ -80,11 +80,14 @@ void VulkanRenderer::cleanup()
 	}
 	vkDestroyDescriptorSetLayout(this->vkLogicalDevice, this->vkDescriptorSetLayout, nullptr);
 	
-	for (auto mesh : meshesToRender)
+	for (auto modelKeyValue : modelsToRender)
 	{
-		mesh.second.destroyDataBuffers();
+		for (auto meshKeyValue : modelKeyValue.second)
+		{
+			meshKeyValue.second.destroyDataBuffers();
+		}
 	}
-	this->meshesToRender.clear();
+	this->modelsToRender.clear();
 
 	for (int i = 0; i < MAX_FRAME_DRAWS; i++)
 	{
@@ -480,7 +483,7 @@ void VulkanRenderer::createGraphicsPipeline()
 	bindingDescription.stride = sizeof(Vertex);
 	bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	array<VkVertexInputAttributeDescription, 3> attributes;
+	array<VkVertexInputAttributeDescription, 4> attributes;
 	attributes[0].binding = 0;										// should be same as above
 	attributes[0].location = 0;
 	attributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -490,11 +493,16 @@ void VulkanRenderer::createGraphicsPipeline()
 	attributes[1].location = 1;
 	attributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 	attributes[1].offset = offsetof(Vertex, color);	
-	
+
 	attributes[2].binding = 0;										// should be same as above
 	attributes[2].location = 2;
-	attributes[2].format = VK_FORMAT_R32G32_SFLOAT;
-	attributes[2].offset = offsetof(Vertex, uv);
+	attributes[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributes[2].offset = offsetof(Vertex, normal);
+	
+	attributes[3].binding = 0;										// should be same as above
+	attributes[3].location = 3;
+	attributes[3].format = VK_FORMAT_R32G32_SFLOAT;
+	attributes[3].offset = offsetof(Vertex, uv);
 
 	// VERTEX INPUT
 	VkPipelineVertexInputStateCreateInfo vertexInputCreateInfo = {};
@@ -1027,36 +1035,47 @@ void VulkanRenderer::recordCommands(uint32_t currentImage)
 	vkCmdBindPipeline(this->vkCommandBuffers[currentImage], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkGraphicsPipeline);
 
 	int meshCount = 0;
-	for (auto pair : meshesToRender)
+	for (auto modelKeyValue : modelsToRender)
 	{
-		VkMesh mesh = pair.second;
+		for (auto meshKeyValue : modelKeyValue.second)
+		{
+			VkMesh mesh = meshKeyValue.second;
 
-		VkBuffer vertexBuffers[] = { mesh.getVertexBuffer() };															// buffers to bind
-		VkBuffer indexBuffer = mesh.getIndexBuffer();
-		VkDeviceSize offsets[] = { 0 };																					// offsets into buffers being bound
-		vkCmdBindVertexBuffers(this->vkCommandBuffers[currentImage], 0, 1, vertexBuffers, offsets);								// Command to bind vertex buffer before deawing with them
-		vkCmdBindIndexBuffer(this->vkCommandBuffers[currentImage], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			VkBuffer vertexBuffers[] = { mesh.getVertexBuffer() };															// buffers to bind
+			VkBuffer indexBuffer = mesh.getIndexBuffer();
+			VkDeviceSize offsets[] = { 0 };																					// offsets into buffers being bound
+			vkCmdBindVertexBuffers(this->vkCommandBuffers[currentImage], 0, 1, vertexBuffers, offsets);								// Command to bind vertex buffer before deawing with them
+			vkCmdBindIndexBuffer(this->vkCommandBuffers[currentImage], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		// LEFT FOR REFERENCE ON DYNAMIC UNIFORM BUFFERS
-		//// Dynamic offset amount
-		//uint32_t dynamicOffset = static_cast<uint32_t>(modelUniformAlignment) * meshCount;
-		//vkCmdBindDescriptorSets(this->vkCommandBuffers[currentImage], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkPipelineLayout,
-		//	0, 1, &this->vkDescriptorSets[currentImage], 1, &dynamicOffset);
+			// LEFT FOR REFERENCE ON DYNAMIC UNIFORM BUFFERS
+			//// Dynamic offset amount
+			//uint32_t dynamicOffset = static_cast<uint32_t>(modelUniformAlignment) * meshCount;
+			//vkCmdBindDescriptorSets(this->vkCommandBuffers[currentImage], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkPipelineLayout,
+			//	0, 1, &this->vkDescriptorSets[currentImage], 1, &dynamicOffset);
 
-		glm::mat4 meshTransform = mesh.getTransformMat();
-		vkCmdPushConstants(this->vkCommandBuffers[currentImage], this->vkPipelineLayout,
-			VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
+			glm::mat4 meshTransform = mesh.getTransformMat();
+			vkCmdPushConstants(this->vkCommandBuffers[currentImage], this->vkPipelineLayout,
+				VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
 
-		std::array<VkDescriptorSet, 2> descriptorSets = { this->vkDescriptorSets[currentImage],
-			this->vkSamplerDescriptorSets[mesh.getTextureIndex()]};
+			if (mesh.getTextureIndex() > -1)
+			{
+				std::array<VkDescriptorSet, 2> descriptorSets = { this->vkDescriptorSets[currentImage],
+					this->vkSamplerDescriptorSets[mesh.getTextureIndex()] };
 
-		vkCmdBindDescriptorSets(this->vkCommandBuffers[currentImage], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkPipelineLayout,
-			0, static_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+				vkCmdBindDescriptorSets(this->vkCommandBuffers[currentImage], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkPipelineLayout,
+					0, static_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+			}
+			else
+			{
+				vkCmdBindDescriptorSets(this->vkCommandBuffers[currentImage], VK_PIPELINE_BIND_POINT_GRAPHICS, this->vkPipelineLayout,
+					0, 1, &this->vkDescriptorSets[currentImage], 0, nullptr);
+			}
 
-		// execute pipeline
-		vkCmdDrawIndexed(this->vkCommandBuffers[currentImage], static_cast<uint32_t>(mesh.getIndexCount()), 1, 0, -1, 0);
+			// execute pipeline
+			vkCmdDrawIndexed(this->vkCommandBuffers[currentImage], static_cast<uint32_t>(mesh.getIndexCount()), 1, 0, -1, 0);
 
-		meshCount++;
+			meshCount++;
+		}
 	}
 
 	// End render pass
@@ -1171,79 +1190,121 @@ void VulkanRenderer::draw()
 	currentFrame = (currentFrame + 1) % MAX_FRAME_DRAWS;
 }
 
-bool VulkanRenderer::addToRenderer(Mesh* mesh, glm::vec3 color)
+
+//bool VulkanRenderer::addToRenderer(Mesh* mesh, glm::vec3 color)
+//{
+//	// If mesh is not in renderer
+//	if (meshesToRender.find(mesh->id) == meshesToRender.end())
+//	{
+//		VkMesh newMesh;
+//		std::vector<Vertex> vertices;
+//		auto meshVertices = mesh->getVertices();
+//		auto meshIndices = mesh->getIndices();
+//		auto meshTexCoords = mesh->getTexCoords();
+//		auto meshNormals = mesh->getNormals();
+//		for (int i = 0; i < meshVertices.size(); i++)
+//		{
+//			Vertex vertex = {};
+//			vertex.pos = meshVertices[i];
+//			vertex.color = color;
+//			vertex.normal = meshNormals[i];
+//			vertex.uv = meshTexCoords[i];
+//			vertices.push_back(vertex);
+//		}
+//		newMesh = VkMesh(this->vkPhysicalDevice, this->vkLogicalDevice,
+//			this->vkGraphicsQueue, this->vkGraphicsCommandPool, &vertices, &meshIndices, -1);
+//		newMesh.setTransformMat(glm::identity<glm::mat4>());
+//		meshesToRender[mesh->id] = newMesh;
+//		return true;
+//	}
+//
+//	return false;
+//}
+
+bool VulkanRenderer::addToRenderer(int modelId, int meshCount, Mesh* meshList, glm::vec3 color)
 {
 	// If mesh is not in renderer
-	if (meshesToRender.find(mesh->id) == meshesToRender.end())
+	if (modelsToRender.find(modelId) == modelsToRender.end())
 	{
-		VkMesh newMesh;
-		std::vector<Vertex> vertices;
-		auto meshVertices = mesh->getVertices();
-		auto meshIndices = mesh->getIndices();
-		auto meshTexCoords = mesh->getTexCoords();
-		for (int i = 0; i < meshVertices.size(); i++)
+		for (int i = 0; i < meshCount; i++)
 		{
-			Vertex vertex = {};
-			vertex.pos = meshVertices[i];
-			vertex.color = color;
-			vertex.uv = meshTexCoords[i];
-			vertices.push_back(vertex);
+			VkMesh newMesh;
+			Mesh* mesh = &meshList[i];
+			std::vector<Vertex> vertices;
+			auto meshVertices = mesh->getVertices();
+			auto meshIndices = mesh->getIndices();
+			auto meshTexCoords = mesh->getTexCoords();
+			auto meshNormals = mesh->getNormals();
+			for (int i = 0; i < meshVertices.size(); i++)
+			{
+				Vertex vertex = {};
+				vertex.pos = meshVertices[i];
+				vertex.color = color;
+				vertex.normal = meshNormals[i];
+				vertex.uv = meshTexCoords[i];
+				vertices.push_back(vertex);
+			}
+			newMesh = VkMesh(this->vkPhysicalDevice, this->vkLogicalDevice,
+				this->vkGraphicsQueue, this->vkGraphicsCommandPool, &vertices, &meshIndices, -1);
+			newMesh.setTransformMat(glm::identity<glm::mat4>());
+			modelsToRender[modelId][mesh->id] = newMesh;
 		}
-		newMesh = VkMesh(this->vkPhysicalDevice, this->vkLogicalDevice,
-			this->vkGraphicsQueue, this->vkGraphicsCommandPool, &vertices, &meshIndices, -1);
-		newMesh.setTransformMat(glm::identity<glm::mat4>());
-		meshesToRender[mesh->id] = newMesh;
+
 		return true;
 	}
 
 	return false;
 }
 
-bool VulkanRenderer::addToRendererTextured(Mesh* mesh, std::string textureFile)
+//bool VulkanRenderer::addToRendererTextured(Mesh* mesh, std::string textureFile)
+//{
+//	// If mesh is not in renderer
+//	if (meshesToRender.find(mesh->id) == meshesToRender.end())
+//	{
+//		VkMesh newMesh;
+//		std::vector<Vertex> vertices;
+//		auto meshVertices = mesh->getVertices();
+//		auto meshIndices = mesh->getIndices();
+//		auto meshTexCoords = mesh->getTexCoords();
+//		for (int i = 0; i < meshVertices.size(); i++)
+//		{
+//			Vertex vertex = {};
+//			vertex.pos = meshVertices[i];
+//			vertex.uv = meshTexCoords[i];
+//			vertices.push_back(vertex);
+//		}
+//		int textureDescriptorIndex = createTexture(textureFile);
+//		newMesh = VkMesh(this->vkPhysicalDevice, this->vkLogicalDevice,
+//			this->vkGraphicsQueue, this->vkGraphicsCommandPool, &vertices, &meshIndices, textureDescriptorIndex);
+//		newMesh.setTransformMat(glm::identity<glm::mat4>());
+//		meshesToRender[mesh->id] = newMesh;
+//
+//		return true;
+//	}
+//
+//	return false;
+//}
+
+bool VulkanRenderer::updateModelTransform(int modelId, glm::mat4 newTransform)
 {
-	// If mesh is not in renderer
-	if (meshesToRender.find(mesh->id) == meshesToRender.end())
+	if (modelsToRender.find(modelId) != modelsToRender.end())
 	{
-		VkMesh newMesh;
-		std::vector<Vertex> vertices;
-		auto meshVertices = mesh->getVertices();
-		auto meshIndices = mesh->getIndices();
-		auto meshTexCoords = mesh->getTexCoords();
-		for (int i = 0; i < meshVertices.size(); i++)
+		for (auto& meshKeyValue : modelsToRender[modelId])
 		{
-			Vertex vertex = {};
-			vertex.pos = meshVertices[i];
-			vertex.uv = meshTexCoords[i];
-			vertices.push_back(vertex);
+			auto& mesh = meshKeyValue.second;
+			mesh.setTransformMat(newTransform);
 		}
-		int textureDescriptorIndex = createTexture(textureFile);
-		newMesh = VkMesh(this->vkPhysicalDevice, this->vkLogicalDevice,
-			this->vkGraphicsQueue, this->vkGraphicsCommandPool, &vertices, &meshIndices, textureDescriptorIndex);
-		newMesh.setTransformMat(glm::identity<glm::mat4>());
-		meshesToRender[mesh->id] = newMesh;
-
 		return true;
 	}
 
 	return false;
 }
 
-bool VulkanRenderer::updateMeshTransform(int meshId, glm::mat4 newTransform)
+bool VulkanRenderer::removeFromRenderer(int modelId)
 {
-	if (meshesToRender.find(meshId) != meshesToRender.end())
+	if (modelsToRender.find(modelId) != modelsToRender.end())
 	{
-		meshesToRender[meshId].setTransformMat(newTransform);
-		return true;
-	}
-
-	return false;
-}
-
-bool VulkanRenderer::removeFromRenderer(Mesh* mesh)
-{
-	if (meshesToRender.find(mesh->id) != meshesToRender.end())
-	{
-		meshesToRender.erase(mesh->id);
+		modelsToRender[modelId].clear();
 		return true;
 	}
 

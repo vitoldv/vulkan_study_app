@@ -1,0 +1,214 @@
+# Blender 4.4.0 MTL File: 'None'
+# www.blender.org
+
+newmtl Aluminum
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.374426 0.400000 0.368800
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl BottomTex
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.329412 0.329412 0.329412
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_OBC.jpg
+
+newmtl FlatBlack
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+
+newmtl FrontSeat
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.329732 0.300400 0.400000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+
+newmtl FrontSeatHeadrest
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.556672 0.544000 0.800000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+
+newmtl Glass1
+Ns 73.999992
+Ka 1.000000 1.000000 1.000000
+Kd 0.028684 0.028684 0.028684
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 0.289260
+illum 9
+
+newmtl GlossyWhite
+Ns 92.000015
+Ka 1.000000 1.000000 1.000000
+Kd 0.581824 0.581824 0.581824
+Ks 0.842980 0.842980 0.842980
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl Headlight
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.481634 0.535077 0.562000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 0.487600
+illum 9
+
+newmtl InstrumentPanel
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_DASH.jpg
+map_Ke D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_DASH.jpg
+
+newmtl InteriorGenericSteelPanels
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.264464 0.264464 0.264464
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl LHBodyTex
+Ns 85.000008
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_OSCL.jpg
+map_Ks D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_OSSP.jpg
+map_Bump D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_SBMP.jpg
+
+newmtl Mirror
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.719000 0.719000 0.719000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl OtherPanel
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_CCON.jpg
+
+newmtl PaintedBlackSteel
+Ns 90.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.125616 0.125616 0.125616
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl PropellerGray
+Ns 52.000004
+Ka 1.000000 1.000000 1.000000
+Kd 0.396078 0.396078 0.396078
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl RHBodyTex
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_OSCR.jpg
+map_Ks D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_OSSP.jpg
+map_Bump D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_SBMP.jpg
+
+newmtl ReflectorRed
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.130400 0.144685
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl SafetyOrange
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.251775 0.133600
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+
+newmtl TireTread
+Ns 36.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.157020 0.157020 0.157020
+Ks 0.396700 0.396700 0.396700
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+
+newmtl TopTex
+Ns 79.999985
+Ka 1.000000 1.000000 1.000000
+Ks 0.198340 0.198340 0.198340
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd D:/projekts/VulkanCourseApp/VulkanCourseApp/assets/SeahawkBlender/Textures/TEX_OTC.jpg
+
+newmtl Trim2
+Ns 90.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.601648 0.601648 0.601648
+Ks 0.892560 0.892560 0.892560
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2

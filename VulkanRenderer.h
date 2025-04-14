@@ -32,7 +32,7 @@
 #define BACKGROUND_COLOR 0x008B8BFF
 
 #define MAX_FRAME_DRAWS 2
-#define MAX_OBJECTS 2
+#define MAX_OBJECTS 100
 
 
 using namespace std;
@@ -109,7 +109,7 @@ private:
 	// Scene
 	glm::mat4 projectionMat;
 	glm::mat4 viewMat;
-	std::map<int, VkMesh> meshesToRender;
+	std::map<uint32_t, std::map<uint32_t, VkMesh>> modelsToRender;
 
 	// Textures
 	VkSampler vkTextureSampler;
@@ -122,10 +122,11 @@ public:
 
 	int init(GLFWwindow* window);
 	void draw();
-	bool addToRenderer(Mesh* mesh, glm::vec3 color);
-	bool addToRendererTextured(Mesh* mesh, std::string textureFile);
-	bool updateMeshTransform(int meshId, glm::mat4 newTransform);
-	bool removeFromRenderer(Mesh* mesh);
+	//bool addToRenderer(Mesh* mesh, glm::vec3 color);
+	bool addToRenderer(int modelId, int meshCount, Mesh* mesh, glm::vec3 color);
+	//bool addToRendererTextured(Mesh* mesh, std::string textureFile);
+	bool updateModelTransform(int modelId, glm::mat4 newTransform);
+	bool removeFromRenderer(int modelId);
 	void cleanup();
 
 	~VulkanRenderer();
