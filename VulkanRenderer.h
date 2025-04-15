@@ -67,13 +67,21 @@ private:
 	VkRenderPass vkRenderPass;
 	VkPipeline vkGraphicsPipeline;
 	VkPipelineLayout vkPipelineLayout;
+	VkPipeline vkSecondPipeline;
+	VkPipelineLayout vkSecondPipelineLayout;
+
 	vector<VkFramebuffer> vkSwapchainFramebuffers;
 	VkCommandPool vkGraphicsCommandPool;
 	vector<VkCommandBuffer> vkCommandBuffers;
 
-	VkImage depthBufferImage;
-	VkDeviceMemory depthBufferImageMemory;
-	VkImageView depthBufferImageView;
+	std::vector<VkImage> colorBufferImage;
+	std::vector<VkDeviceMemory> colorBufferImageMemory;
+	std::vector<VkImageView> colorBufferImageView;
+	VkFormat colorFormat;
+
+	std::vector<VkImage> depthBufferImage;
+	std::vector<VkDeviceMemory> depthBufferImageMemory;
+	std::vector<VkImageView> depthBufferImageView;
 	VkFormat depthFormat;
 
 	// Extension Vulkan Components
@@ -82,9 +90,12 @@ private:
 	// Descriptors
 	VkDescriptorSetLayout vkDescriptorSetLayout;
 	VkDescriptorSetLayout vkSamplerDescriptorSetLayout;
+	VkDescriptorSetLayout vkInputDescriptorSetLayout;		// input to subpass 2
 	VkDescriptorPool vkDescriptorPool;
+	VkDescriptorPool vkInputDescriptorPool;
 	vector<VkDescriptorSet> vkDescriptorSets;
 	vector<VkDescriptorSet> vkSamplerDescriptorSets;
+	vector<VkDescriptorSet> vkInputDescriptorSets;
 	vector<VkBuffer> uniformBuffers;
 	vector<VkDeviceMemory> uniformBuffersMemory;
 	VkDeviceSize minUniformBufferOffset;
@@ -138,6 +149,7 @@ private:
 	void createSwapChain();
 	void createRenderPass();
 	void createGraphicsPipeline();
+	void createColorBufferImage();
 	void createDepthBuffer();
 	void createFramebuffers();
 	void createCommandPool();
@@ -147,6 +159,7 @@ private:
 	void createUniformBuffers();
 	void createDescriptorPool();
 	void createDescriptorSets();
+	void createInputDescriptorSets();
 	void createPushConstantRange();
 	void createTextureSampler();
 	int createTextureSamplerDescriptor(VkImageView textureImageView);
@@ -182,3 +195,14 @@ private:
 	void printPhysicalDeviceInfo(VkPhysicalDevice device, bool printPropertiesFull = false, bool printFeaturesFull = false);
 };
 
+
+
+// ------------------- TODO -------------------
+// 1. Make a generic function for pipeline creation to avoid a lot of duplicated code in createGraphicsPipeline();
+// 2. Create a solution for removing swapChainImages.size() overuse (Create a constant value for images count or 
+// make a wrapper for single swapchain image code);
+// 3. Think of optimal max descriptor sets count other than MAX_OBJECTS (probably also create a separate pool for
+// sampler descriptors).
+// 4. Think of single memory buffer for meshes related to specific model
+// 5. Create solution for instance batching
+// 6. Extract all duplicated "magic" Vulkan flags to single space in code
