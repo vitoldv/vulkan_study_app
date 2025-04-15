@@ -77,9 +77,7 @@ private:
 	VkFormat depthFormat;
 
 	// Extension Vulkan Components
-#ifndef NDEBUG
 	VkDebugUtilsMessengerEXT debugMessenger;
-#endif
 
 	// Descriptors
 	VkDescriptorSetLayout vkDescriptorSetLayout;

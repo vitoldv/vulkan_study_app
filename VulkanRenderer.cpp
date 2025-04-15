@@ -110,10 +110,13 @@ void VulkanRenderer::cleanup()
 	}
 	vkDestroySwapchainKHR(this->vkLogicalDevice, this->vkSwapchain, nullptr);
 	vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
+
+#ifndef NDEBUG
 	if (ENABLE_VALIDATION_LAYERS)
 	{
 		destroyDebugUtilsMessengerEXT(this->vkInstance, this->debugMessenger, nullptr);
 	}
+#endif
 	vkDestroyDevice(this->vkLogicalDevice, nullptr);
 	vkDestroyInstance(this->vkInstance, nullptr);
 }
